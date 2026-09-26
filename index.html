@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Game phiêu lưu học toán lớp 4 qua 6 màn đảo: cộng trừ, nhân chia, phân số, hình học, đo lường và màn trùm tổng hợp.">
+<meta name="theme-color" content="#2f6f5e">
+<title>Vương Quốc Số Học</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@600;700&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c2b28;
+    --ink-soft:#4a5f5a;
+    --bg:#f6ecd8;
+    --panel:#fffaf0;
+    --panel-2:#efe0bf;
+    --jungle:#2f6f5e;
+    --jungle-deep:#1f4d40;
+    --coral:#e8604a;
+    --gold:#dfa233;
+    --good:#2f9e6b;
+    --bad:#c23b2b;
+    --line:rgba(28,43,40,.14);
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#eef2ee;
+      --ink-soft:#a9c0b8;
+      --bg:#132521;
+      --panel:#1b332d;
+      --panel-2:#24413a;
+      --jungle:#5fcf9e;
+      --jungle-deep:#3aa87d;
+      --coral:#ff8a6b;
+      --gold:#f3c467;
+      --good:#5fcf9e;
+      --bad:#ff6a53;
+      --line:rgba(238,242,238,.14);
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#eef2ee;
+    --ink-soft:#a9c0b8;
+    --bg:#132521;
+    --panel:#1b332d;
+    --panel-2:#24413a;
+    --jungle:#5fcf9e;
+    --jungle-deep:#3aa87d;
+    --coral:#ff8a6b;
+    --gold:#f3c467;
+    --good:#5fcf9e;
+    --bad:#ff6a53;
+    --line:rgba(238,242,238,.14);
+    color-scheme:dark;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    min-height:100vh;
+    font-family:'Be Vietnam Pro','Segoe UI',Roboto,sans-serif;
+    color:var(--ink);
+  }
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--panel);
+    box-shadow:0 0 0 1px var(--line);
+    display:flex;
+    flex-direction:column;
+  }
+  h1,h2{font-family:'Mali','Segoe UI',sans-serif;text-wrap:balance;margin:0;}
+  button{font-family:inherit;}
+  button:focus-visible{outline:3px solid var(--jungle-deep);outline-offset:2px;}
+  [hidden]{display:none!important;}
+
+  .topbar{
+    position:sticky;
+    top:env(safe-area-inset-top,0px);
+    z-index:5;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:14px 16px;
+    background:var(--jungle);
+    color:#fff;
+  }
+  .icon-btn{
+    background:rgba(255,255,255,.16);
+    border:none;
+    color:#fff;
+    width:36px;height:36px;
+    border-radius:50%;
+    font-size:1.1rem;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    flex:none;
+  }
+  .topbar-title{
+    flex:1;
+    font-size:1.15rem;
+    font-weight:700;
+    line-height:1.2;
+  }
+  .topbar-stats{display:flex;gap:8px;}
+  .pill{
+    background:rgba(255,255,255,.18);
+    border-radius:999px;
+    padding:6px 12px;
+    font-size:.85rem;
+    font-weight:600;
+    font-variant-numeric:tabular-nums;
+    display:flex;align-items:center;gap:5px;
+  }
+
+  .screen{flex:1;display:flex;flex-direction:column;padding-block:16px;}
+
+  /* ---- Map screen ---- */
+  .map-wrap{
+    position:relative;
+    width:100%;
+    max-width:420px;
+    aspect-ratio:100/130;
+    margin:0 auto;
+    padding-inline:16px;
+  }
+  .map-svg{position:absolute;inset:0;width:100%;height:100%;}
+  .map-path-line{fill:none;stroke:var(--panel-2);stroke-width:4;stroke-linecap:round;stroke-dasharray:0.2 6;}
+  .map-nodes{position:absolute;inset:0;}
+  .map-node{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    width:92px;
+    background:none;border:none;padding:6px;
+    cursor:pointer;color:var(--ink);
+  }
+  .map-node:active .node-badge{transform:scale(.94);}
+  .node-badge{
+    width:56px;height:56px;border-radius:50%;
+    background:var(--panel);
+    border:3px solid var(--jungle);
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.6rem;
+    box-shadow:0 3px 0 var(--line);
+  }
+  .map-node.boss .node-badge{
+    border-color:var(--gold);
+    box-shadow:0 0 0 4px rgba(223,162,51,.25), 0 3px 0 var(--line);
+  }
+  .map-node.locked{opacity:.5;cursor:not-allowed;}
+  .map-node.locked .node-badge{border-color:var(--ink-soft);}
+  .node-name{font-size:.72rem;font-weight:600;text-align:center;line-height:1.15;}
+  .node-stars{font-size:.75rem;color:var(--gold);letter-spacing:1px;}
+  .map-footer{
+    text-align:center;
+    font-size:.85rem;
+    color:var(--ink-soft);
+    font-weight:600;
+    padding-top:8px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ---- Intro screen ---- */
+  .intro-card{
+    margin:auto;
+    text-align:center;
+    padding:24px;
+    display:flex;flex-direction:column;align-items:center;gap:12px;
+    max-width:360px;
+  }
+  .intro-icon{font-size:3.4rem;}
+  .intro-title{font-size:1.7rem;color:var(--jungle-deep);}
+  .intro-tip{
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:12px 16px;
+    font-size:.92rem;
+    color:var(--ink-soft);
+    line-height:1.5;
+  }
+  .intro-stars{font-size:1.3rem;color:var(--gold);letter-spacing:2px;}
+
+  .btn-primary,.btn-secondary{
+    border:none;border-radius:14px;
+    padding:14px 22px;
+    font-size:1rem;font-weight:700;
+    cursor:pointer;
+    font-family:'Mali','Segoe UI',sans-serif;
+  }
+  .btn-primary{background:var(--coral);color:#fff;box-shadow:0 3px 0 rgba(0,0,0,.15);}
+  .btn-primary:active{transform:translateY(2px);box-shadow:none;}
+  .btn-secondary{background:var(--panel-2);color:var(--ink);}
+  .btn-secondary:active{transform:translateY(2px);}
+
+  /* ---- Quiz screen ---- */
+  .quiz-status{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:0 16px 10px;
+  }
+  .hearts{font-size:1.15rem;letter-spacing:2px;}
+  .progress-label{font-size:.85rem;font-weight:700;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+
+  .quiz-card{
+    flex:1;
+    display:flex;flex-direction:column;align-items:center;
+    gap:16px;
+    padding:8px 20px 16px;
+    text-align:center;
+  }
+  .prompt{
+    font-size:1.5rem;font-weight:700;
+    font-family:'Mali','Segoe UI',sans-serif;
+    font-variant-numeric:tabular-nums;
+    text-wrap:balance;
+    max-width:340px;
+  }
+  .diagram-svg{width:100%;max-width:240px;height:auto;display:block;margin:0 auto;}
+  .dg-shape{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;}
+  .dg-mark{fill:none;stroke:var(--ink);stroke-width:2;}
+  .dg-mark2{fill:none;stroke:var(--jungle);stroke-width:2.5;}
+  .dg-dot{fill:var(--coral);}
+  .dg-label{font-size:13px;fill:var(--ink);font-weight:600;}
+
+  .answer-zone{width:100%;display:flex;justify-content:center;}
+  .choice-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;
+    width:100%;max-width:320px;
+  }
+  .choice-btn{
+    border:2px solid var(--line);
+    background:var(--bg);
+    color:var(--ink);
+    border-radius:14px;
+    padding:16px 8px;
+    font-size:1.05rem;font-weight:700;
+    font-family:'Mali','Segoe UI',sans-serif;
+    cursor:pointer;
+  }
+  .choice-btn.is-correct{border-color:var(--good);background:rgba(47,158,107,.15);}
+  .choice-btn.is-wrong{border-color:var(--bad);background:rgba(194,59,43,.15);}
+
+  .slot-wrap{display:flex;align-items:center;justify-content:center;gap:8px;}
+  .slot{
+    min-width:78px;
+    min-height:1.6em;
+    border:2px solid var(--line);
+    background:var(--bg);
+    border-radius:12px;
+    padding:10px 14px;
+    font-size:1.5rem;font-weight:700;
+    font-variant-numeric:tabular-nums;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .slot.active{border-color:var(--jungle);}
+  .slot.is-correct{border-color:var(--good);background:rgba(47,158,107,.15);}
+  .slot.is-wrong{border-color:var(--bad);background:rgba(194,59,43,.15);}
+  .unit-suffix{font-size:1.1rem;font-weight:600;color:var(--ink-soft);}
+
+  .inline-wrap{display:flex;gap:18px;}
+  .inline-item{display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .inline-label{font-size:.78rem;font-weight:600;color:var(--ink-soft);}
+
+  .frac-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .frac-label{font-size:.75rem;font-weight:600;color:var(--ink-soft);}
+  .frac-bar{width:60px;height:3px;background:var(--ink);border-radius:2px;margin:2px 0;}
+
+  .feedback{
+    width:100%;max-width:340px;
+    border-radius:14px;
+    padding:14px 16px;
+    border:2px solid var(--line);
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .feedback.ok{border-color:var(--good);background:rgba(47,158,107,.12);}
+  .feedback.bad{border-color:var(--bad);background:rgba(194,59,43,.12);}
+  .feedback-text{font-size:.92rem;line-height:1.5;}
+
+  .keypad-dock{
+    padding:8px 16px calc(16px + env(safe-area-inset-bottom,0px));
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    max-width:340px;
+    margin:0 auto;
+    width:100%;
+  }
+  .key{
+    border:none;border-radius:12px;
+    background:var(--panel-2);
+    color:var(--ink);
+    font-size:1.2rem;font-weight:700;
+    padding:14px 0;
+    cursor:pointer;
+    font-variant-numeric:tabular-nums;
+  }
+  .key:disabled{opacity:.5;}
+  .key-check{background:var(--jungle);color:#fff;}
+  .key-back{background:var(--panel-2);color:var(--coral);}
+
+  /* ---- Result screen ---- */
+  .result-card{
+    margin:auto;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:14px;
+    padding:24px;max-width:340px;
+  }
+  .result-stars{font-size:2.4rem;color:var(--gold);letter-spacing:4px;}
+  .result-title{font-size:1.6rem;color:var(--jungle-deep);}
+  .result-sub{font-size:.95rem;color:var(--ink-soft);line-height:1.5;}
+  .result-actions{display:flex;flex-direction:column;gap:10px;width:100%;margin-top:8px;}
+
+  @media (prefers-reduced-motion: no-preference){
+    .map-node .node-badge{transition:transform .1s ease;}
+    .btn-primary:active,.btn-secondary:active{transition:transform .08s ease;}
+    .feedback{animation:slideIn .22s ease;}
+    @keyframes slideIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="topbar">
+    <button class="icon-btn" id="btn-back" hidden aria-label="Quay lại bản đồ">←</button>
+    <div class="topbar-title" id="topbar-title">Vương Quốc Số Học</div>
+    <div class="topbar-stats">
+      <span class="pill"><span>🪙</span><span id="coin-count">0</span></span>
+    </div>
+  </header>
+
+  <main class="screen" id="screen-map">
+    <div class="map-wrap">
+      <svg class="map-svg" viewBox="0 0 100 130" preserveAspectRatio="none" aria-hidden="true">
+        <path id="map-path" class="map-path-line"/>
+      </svg>
+      <div class="map-nodes" id="map-nodes"></div>
+    </div>
+    <p class="map-footer" id="map-footer"></p>
+  </main>
+
+  <main class="screen" id="screen-intro" hidden>
+    <div class="intro-card">
+      <div class="intro-icon" id="intro-icon"></div>
+      <h1 class="intro-title" id="intro-title"></h1>
+      <p class="intro-tip" id="intro-tip"></p>
+      <div class="intro-stars" id="intro-stars"></div>
+      <button class="btn-primary" id="btn-start">Bắt đầu</button>
+    </div>
+  </main>
+
+  <main class="screen" id="screen-quiz" hidden>
+    <div class="quiz-status">
+      <div class="hearts" id="hearts"></div>
+      <div class="progress-label" id="progress-label"></div>
+    </div>
+    <div class="quiz-card">
+      <div class="prompt" id="prompt"></div>
+      <div class="diagram" id="diagram" hidden></div>
+      <div class="answer-zone" id="answer-zone"></div>
+      <div class="feedback" id="feedback" hidden>
+        <div class="feedback-text" id="feedback-text"></div>
+        <button class="btn-primary" id="btn-next">Câu tiếp theo →</button>
+      </div>
+    </div>
+    <div class="keypad-dock" id="keypad-dock"></div>
+  </main>
+
+  <main class="screen" id="screen-result" hidden>
+    <div class="result-card">
+      <div class="result-stars" id="result-stars"></div>
+      <h1 class="result-title" id="result-title"></h1>
+      <p class="result-sub" id="result-sub"></p>
+      <div class="result-actions" id="result-actions"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function choice(arr){ return arr[randInt(0,arr.length-1)]; }
+  function gcd(a,b){ return b===0?a:gcd(b,a%b); }
+
+  // ---------- Question generators ----------
+  function genAddSub(qIdx){
+    const tier = qIdx<3?0:(qIdx<6?1:2);
+    const digits = tier===0?3:(tier===1?4:5);
+    const min = Math.pow(10,digits-1), max = Math.pow(10,digits)-1;
+    const isAdd = Math.random()<0.5;
+    let a=randInt(min,max), b=randInt(min,max), op, answer;
+    if(isAdd){ op='+'; answer=a+b; }
+    else { if(b>a){ const t=a; a=b; b=t; } op='-'; answer=a-b; }
+    return { type:'num1', unit:'', prompt:`${a} ${op} ${b} = ?`, answer,
+      explain:`${a} ${op} ${b} = ${answer}.` };
+  }
+
+  function genMulDiv(qIdx){
+    const tier = qIdx<3?0:(qIdx<6?1:2);
+    const isMul = Math.random()<0.5;
+    if(isMul){
+      const aMin=[12,45,120][tier], aMax=[45,250,999][tier];
+      const bMin=[2,11,22][tier], bMax=[9,45,99][tier];
+      const a=randInt(aMin,aMax), b=randInt(bMin,bMax);
+      const answer=a*b;
+      return { type:'num1', unit:'', prompt:`${a} × ${b} = ?`, answer,
+        explain:`${a} × ${b} = ${answer}.` };
+    } else {
+      const dMin=[2,6,12][tier], dMax=[9,30,60][tier];
+      const qMin=[3,8,20][tier], qMax=[12,40,90][tier];
+      const d=randInt(dMin,dMax), q=randInt(qMin,qMax);
+      const exact = Math.random()<0.5;
+      const r = exact?0:randInt(1,d-1);
+      const dividend=q*d+r;
+      if(exact){
+        return { type:'num1', unit:'', prompt:`${dividend} : ${d} = ?`, answer:q,
+          explain:`${dividend} : ${d} = ${q} (chia hết).` };
+      }
+      return { type:'num2', layout:'inline', labels:['Thương','Số dư'],
+        prompt:`${dividend} : ${d} = ? (tìm thương và số dư)`, answer:[q,r],
+        explain:`${dividend} : ${d} = ${q} (dư ${r}), vì ${q} × ${d} + ${r} = ${dividend}.` };
+    }
+  }
+
+  function genFraction(qIdx){
+    const subtype = ['compare','simplify','addsub'][qIdx%3];
+    const denomsPool=[3,4,5,6,8,10,12];
+    if(subtype==='compare'){
+      const d1=choice(denomsPool);
+      const d2=choice(denomsPool.filter(x=>x!==d1));
+      const a=randInt(1,d1-1), b=randInt(1,d2-1);
+      const left=a*d2, right=b*d1;
+      const symbol = left>right?'>':(left<right?'<':'=');
+      return { type:'choice', options:['<','>','='],
+        prompt:`So sánh: ${a}/${d1}  ...  ${b}/${d2}`, answer:symbol,
+        explain:`${a}/${d1} = ${(a/d1).toFixed(2)}, ${b}/${d2} = ${(b/d2).toFixed(2)} → ${a}/${d1} ${symbol} ${b}/${d2}.` };
+    }
+    if(subtype==='simplify'){
+      const q0=choice([2,3,4,5,6]);
+      let p0=randInt(1,q0-1);
+      while(gcd(p0,q0)!==1){ p0=randInt(1,q0-1); }
+      const k=choice([2,3,4,5]);
+      const p=p0*k, q=q0*k;
+      return { type:'num2', layout:'fraction', labels:['Tử số','Mẫu số'],
+        prompt:`Rút gọn phân số: ${p}/${q} = ?`, answer:[p0,q0],
+        explain:`${p}/${q} = ${p0}/${q0} (chia cả tử số và mẫu số cho ${k}).` };
+    }
+    const d=choice([4,5,6,8,10]);
+    let a=randInt(1,d-1), b=randInt(1,d-1), op, answer;
+    if(Math.random()<0.5 && a+b<=d){ op='+'; answer=a+b; }
+    else { if(b>a){ const t=a; a=b; b=t; } op='-'; answer=a-b; }
+    return { type:'num1', unit:`/${d}`,
+      prompt:`${a}/${d} ${op} ${b}/${d} = ?/${d}`, answer,
+      explain:`${a}/${d} ${op} ${b}/${d} = ${answer}/${d}.` };
+  }
+
+  function genGeometry(qIdx){
+    const subtype=['perimeter','area','angle'][qIdx%3];
+    if(subtype==='perimeter'){
+      const l=randInt(7,20), w=randInt(3,l);
+      const answer=(l+w)*2;
+      return { type:'num1', unit:'cm',
+        prompt:`Hình chữ nhật có chiều dài ${l}cm, chiều rộng ${w}cm. Tính chu vi.`,
+        diagram:{kind:'rect', l, w}, answer,
+        explain:`Chu vi = (dài + rộng) × 2 = (${l} + ${w}) × 2 = ${answer} cm.` };
+    }
+    if(subtype==='area'){
+      const l=randInt(6,18), w=randInt(3,l);
+      const answer=l*w;
+      return { type:'num1', unit:'cm²',
+        prompt:`Hình chữ nhật có chiều dài ${l}cm, chiều rộng ${w}cm. Tính diện tích.`,
+        diagram:{kind:'rect', l, w}, answer,
+        explain:`Diện tích = dài × rộng = ${l} × ${w} = ${answer} cm².` };
+    }
+    const cats=[['Góc nhọn',()=>randInt(25,70)],['Góc vuông',()=>90],['Góc tù',()=>randInt(100,160)],['Góc bẹt',()=>180]];
+    const picked=choice(cats);
+    const label=picked[0], theta=picked[1]();
+    return { type:'choice', options:cats.map(c=>c[0]),
+      prompt:`Góc trong hình dưới đây có số đo ${theta}°. Đó là góc gì?`,
+      diagram:{kind:'angle', theta}, answer:label,
+      explain:`Góc ${theta}° là ${label.toLowerCase()}.` };
+  }
+
+  function genMeasurement(qIdx){
+    const subtype=['mass','area','time'][qIdx%3];
+    if(subtype==='mass'){
+      const table=[['yến','kg',10],['tạ','kg',100],['tấn','kg',1000],['tạ','yến',10],['tấn','tạ',10]];
+      const row=choice(table);
+      const big=row[0], small=row[1], factor=row[2];
+      if(Math.random()<0.5){
+        const n=randInt(2,9);
+        return { type:'num1', unit:small, prompt:`${n} ${big} = ? ${small}`, answer:n*factor,
+          explain:`1 ${big} = ${factor} ${small}, nên ${n} ${big} = ${n*factor} ${small}.` };
+      }
+      const k=randInt(2,9), n=k*factor;
+      return { type:'num1', unit:big, prompt:`${n} ${small} = ? ${big}`, answer:k,
+        explain:`${factor} ${small} = 1 ${big}, nên ${n} ${small} = ${k} ${big}.` };
+    }
+    if(subtype==='area'){
+      const units=['cm²','dm²','m²'];
+      const i=randInt(0,1);
+      const small=units[i], big=units[i+1];
+      if(Math.random()<0.5){
+        const n=randInt(2,9);
+        return { type:'num1', unit:small, prompt:`${n} ${big} = ? ${small}`, answer:n*100,
+          explain:`1 ${big} = 100 ${small}, nên ${n} ${big} = ${n*100} ${small}.` };
+      }
+      const k=randInt(2,9), n=k*100;
+      return { type:'num1', unit:big, prompt:`${n} ${small} = ? ${big}`, answer:k,
+        explain:`100 ${small} = 1 ${big}, nên ${n} ${small} = ${k} ${big}.` };
+    }
+    if(Math.random()<0.5){
+      const Y=randInt(101,2026);
+      const century=Math.floor((Y-1)/100)+1;
+      return { type:'num1', unit:'', prompt:`Năm ${Y} thuộc thế kỷ thứ mấy?`, answer:century,
+        explain:`Năm ${Y} nằm trong thế kỷ ${century} (từ năm ${(century-1)*100+1} đến năm ${century*100}).` };
+    }
+    if(Math.random()<0.5){
+      const n=randInt(2,9);
+      return { type:'num1', unit:'giây', prompt:`${n} phút = ? giây`, answer:n*60,
+        explain:`1 phút = 60 giây, nên ${n} phút = ${n*60} giây.` };
+    }
+    const k=randInt(2,9), n=k*60;
+    return { type:'num1', unit:'phút', prompt:`${n} giây = ? phút`, answer:k,
+      explain:`60 giây = 1 phút, nên ${n} giây = ${k} phút.` };
+  }
+
+  function genBoss(){
+    const gens=[genAddSub, genMulDiv, genFraction, genGeometry, genMeasurement];
+    const g=choice(gens);
+    return g(randInt(0,7));
+  }
+
+  const LEVELS=[
+    { id:1, name:'Làng Cộng Trừ', icon:'➕',
+      tip:'Mẹo: Đặt các chữ số thẳng cột rồi tính từ phải sang trái. Nhớ khi cộng, mượn khi trừ!',
+      gen:genAddSub },
+    { id:2, name:'Xưởng Nhân Chia', icon:'✖️',
+      tip:'Mẹo: Khi chia có dư, số dư luôn bé hơn số chia. Kiểm tra lại bằng phép nhân: thương × số chia + số dư = số bị chia.',
+      gen:genMulDiv },
+    { id:3, name:'Đảo Phân Số', icon:'🍕',
+      tip:'Mẹo: Muốn rút gọn phân số, tìm số lớn nhất chia hết cho cả tử số và mẫu số.',
+      gen:genFraction },
+    { id:4, name:'Rừng Hình Học', icon:'📐',
+      tip:'Mẹo: Chu vi hình chữ nhật = (dài + rộng) × 2. Diện tích = dài × rộng.',
+      gen:genGeometry },
+    { id:5, name:'Thung Lũng Đo Lường', icon:'⚖️',
+      tip:'Mẹo: 1 tấn = 10 tạ = 100 yến = 1000kg. Học kỹ bảng đơn vị đo nhé!',
+      gen:genMeasurement },
+    { id:6, name:'Đỉnh Trùm Số Học', icon:'👑',
+      tip:'Đây là màn tổng hợp tất cả kiến thức đã học. Bình tĩnh đọc kỹ đề nhé, nhà vô địch!',
+      gen:genBoss },
+  ];
+  const MAP_POINTS=[{x:18,y:118},{x:74,y:102},{x:24,y:84},{x:76,y:64},{x:22,y:44},{x:50,y:16}];
+
+  function catmullRom2bezier(points){
+    let d = `M${points[0].x},${points[0].y} `;
+    for(let i=0;i<points.length-1;i++){
+      const p0=points[i-1]||points[i];
+      const p1=points[i];
+      const p2=points[i+1];
+      const p3=points[i+2]||p2;
+      const c1x=p1.x+(p2.x-p0.x)/6, c1y=p1.y+(p2.y-p0.y)/6;
+      const c2x=p2.x-(p3.x-p1.x)/6, c2y=p2.y-(p3.y-p1.y)/6;
+      d += `C${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${p2.x},${p2.y} `;
+    }
+    return d;
+  }
+
+  function renderStarsInline(n){
+    return '★'.repeat(n) + '☆'.repeat(3-n);
+  }
+
+  function renderDiagram(el, d){
+    if(!d){ el.hidden=true; el.innerHTML=''; return; }
+    el.hidden=false;
+    if(d.kind==='rect'){
+      el.innerHTML = `<svg viewBox="0 0 220 130" class="diagram-svg">
+        <rect x="45" y="25" width="130" height="75" class="dg-shape"/>
+        <path d="M45 100 l10 0 l0 -10" class="dg-mark"/>
+        <text x="110" y="18" class="dg-label" text-anchor="middle">${d.l} cm</text>
+        <text x="20" y="66" class="dg-label" text-anchor="middle" transform="rotate(-90 20 66)">${d.w} cm</text>
+      </svg>`;
+    } else if(d.kind==='angle'){
+      const vx=40, vy=115, R=150;
+      const rad=d.theta*Math.PI/180;
+      const x2=vx+R*Math.cos(rad), y2=vy-R*Math.sin(rad);
+      let marker='';
+      if(Math.abs(d.theta-90)<0.5){
+        marker = `<rect x="${vx}" y="${vy-18}" width="18" height="18" class="dg-mark2"/>`;
+      }
+      el.innerHTML = `<svg viewBox="0 0 220 130" class="diagram-svg">
+        <line x1="${vx}" y1="${vy}" x2="${vx+160}" y2="${vy}" class="dg-shape"/>
+        <line x1="${vx}" y1="${vy}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" class="dg-shape"/>
+        ${marker}
+        <circle cx="${vx}" cy="${vy}" r="3" class="dg-dot"/>
+        <text x="${(vx+70).toFixed(0)}" y="${(vy-40).toFixed(0)}" class="dg-label">${d.theta}°</text>
+      </svg>`;
+    }
+  }
+
+  // ---------- State ----------
+  let progress = { unlockedLevel:1, coins:0, stars:{} };
+  let appState = { screen:'map', levelIndex:0 };
+  let quiz = null;
+  let quizInput = { slots:[''], active:0 };
+  let dbDoc=null, dbAvailable=false;
+
+  function loadLocalFallback(){
+    try{
+      const raw=localStorage.getItem('vqsh_progress_v1');
+      if(raw){
+        const d=JSON.parse(raw);
+        progress={ unlockedLevel:d.unlockedLevel||1, coins:d.coins||0, stars:d.stars||{} };
+      }
+    }catch(e){}
+  }
+  function saveLocalFallback(){
+    try{ localStorage.setItem('vqsh_progress_v1', JSON.stringify(progress)); }catch(e){}
+  }
+  function saveProgress(){
+    if(dbAvailable && dbDoc){
+      dbDoc.set({
+        unlockedLevel:progress.unlockedLevel,
+        coins:progress.coins,
+        stars:progress.stars,
+        updatedAt:new Date().toISOString()
+      }).catch(function(){ saveLocalFallback(); });
+    } else {
+      saveLocalFallback();
+    }
+  }
+  async function initDb(){
+    try{
+      const db = await (window.claude && window.claude.use ? window.claude.use('db') : Promise.resolve(null));
+      if(!db) return;
+      dbAvailable=true;
+      dbDoc = db.doc('progress/player');
+      dbDoc.onSnapshot(function(snap){
+        if(snap.exists){
+          const d=snap.data();
+          progress = { unlockedLevel:d.unlockedLevel||1, coins:d.coins||0, stars:d.stars||{} };
+          document.getElementById('coin-count').textContent = progress.coins;
+          if(appState.screen==='map') renderMap();
+        }
+      }, function(){ /* keep local state on error */ });
+    }catch(e){}
+  }
+
+  function showScreen(name){
+    ['map','intro','quiz','result'].forEach(function(s){
+      document.getElementById('screen-'+s).hidden = (s!==name);
+    });
+    appState.screen=name;
+    document.getElementById('btn-back').hidden = (name==='map');
+  }
+
+  function goMap(){
+    document.getElementById('topbar-title').textContent='Vương Quốc Số Học';
+    renderMap();
+    showScreen('map');
+  }
+
+  function renderMap(){
+    const svgPath=document.getElementById('map-path');
+    const nodesEl=document.getElementById('map-nodes');
+    svgPath.setAttribute('d', catmullRom2bezier(MAP_POINTS));
+    nodesEl.innerHTML='';
+    LEVELS.forEach(function(lvl, idx){
+      const pt=MAP_POINTS[idx];
+      const unlocked = lvl.id<=progress.unlockedLevel;
+      const stars = progress.stars[lvl.id]||0;
+      const btn=document.createElement('button');
+      btn.className='map-node'+(unlocked?'':' locked')+(lvl.id===6?' boss':'');
+      btn.style.left=pt.x+'%';
+      btn.style.top=pt.y+'%';
+      btn.innerHTML = '<span class="node-badge">'+(unlocked?lvl.icon:'🔒')+'</span>'+
+        '<span class="node-name">'+lvl.name+'</span>'+
+        (unlocked?'<span class="node-stars">'+renderStarsInline(stars)+'</span>':'');
+      if(unlocked){
+        btn.addEventListener('click', function(){ openIntro(idx); });
+      } else {
+        btn.disabled=true;
+      }
+      nodesEl.appendChild(btn);
+    });
+    document.getElementById('coin-count').textContent = progress.coins;
+    const totalStars = LEVELS.reduce(function(s,l){ return s+(progress.stars[l.id]||0); },0);
+    document.getElementById('map-footer').textContent =
+      '⭐ '+totalStars+'/'+(LEVELS.length*3)+' sao  ·  🪙 '+progress.coins+' xu';
+  }
+
+  function openIntro(idx){
+    appState.levelIndex=idx;
+    const lvl=LEVELS[idx];
+    document.getElementById('topbar-title').textContent=lvl.name;
+    document.getElementById('intro-icon').textContent=lvl.icon;
+    document.getElementById('intro-title').textContent=lvl.name;
+    document.getElementById('intro-tip').textContent=lvl.tip;
+    document.getElementById('intro-stars').innerHTML=renderStarsInline(progress.stars[lvl.id]||0);
+    showScreen('intro');
+  }
+
+  function buildKeypad(){
+    const dock=document.getElementById('keypad-dock');
+    const keys=['1','2','3','4','5','6','7','8','9','⌫','0','✓'];
+    dock.innerHTML = keys.map(function(k){
+      if(k==='✓') return '<button class="key key-check" data-key="check" id="btn-check">'+k+'</button>';
+      if(k==='⌫') return '<button class="key key-back" data-key="back">'+k+'</button>';
+      return '<button class="key" data-key="'+k+'">'+k+'</button>';
+    }).join('');
+    dock.querySelectorAll('.key').forEach(function(btn){
+      btn.addEventListener('click', function(){ onKeyPress(btn.dataset.key); });
+    });
+  }
+
+  function updateSlotDisplay(){
+    quizInput.slots.forEach(function(v,i){
+      const el=document.getElementById('slot-'+i);
+      if(el) el.textContent = v;
+    });
+    const filled = quizInput.slots.every(function(v){ return v!==''; });
+    const chk=document.getElementById('btn-check');
+    if(chk) chk.disabled = !filled;
+  }
+  function updateSlotHighlight(){
+    quizInput.slots.forEach(function(_,i){
+      const el=document.getElementById('slot-'+i);
+      if(el) el.classList.toggle('active', i===quizInput.active);
+    });
+  }
+
+  function renderAnswerZone(q){
+    const zone=document.getElementById('answer-zone');
+    const dock=document.getElementById('keypad-dock');
+    if(q.type==='choice'){
+      dock.hidden=true;
+      zone.className='answer-zone choice-grid';
+      zone.innerHTML = q.options.map(function(opt){
+        return '<button class="choice-btn" data-val="'+encodeURIComponent(opt)+'">'+opt+'</button>';
+      }).join('');
+      zone.querySelectorAll('.choice-btn').forEach(function(b){
+        b.addEventListener('click', function(){ submitAnswer(decodeURIComponent(b.dataset.val)); });
+      });
+      return;
+    }
+    dock.hidden=false;
+    zone.className='answer-zone input-zone';
+    quizInput = { slots: q.type==='num2'?['','']:[''], active:0 };
+    if(q.type==='num1'){
+      zone.innerHTML = '<div class="slot-wrap"><button class="slot" data-i="0" id="slot-0"></button>'+
+        (q.unit?'<span class="unit-suffix">'+q.unit+'</span>':'')+'</div>';
+    } else if(q.layout==='fraction'){
+      zone.innerHTML =
+        '<div class="frac-wrap">'+
+          '<div class="frac-label">'+q.labels[0]+'</div>'+
+          '<button class="slot" data-i="0" id="slot-0"></button>'+
+          '<div class="frac-bar"></div>'+
+          '<button class="slot" data-i="1" id="slot-1"></button>'+
+          '<div class="frac-label">'+q.labels[1]+'</div>'+
+        '</div>';
+    } else {
+      zone.innerHTML =
+        '<div class="inline-wrap">'+
+          '<div class="inline-item"><div class="inline-label">'+q.labels[0]+'</div><button class="slot" data-i="0" id="slot-0"></button></div>'+
+          '<div class="inline-item"><div class="inline-label">'+q.labels[1]+'</div><button class="slot" data-i="1" id="slot-1"></button></div>'+
+        '</div>';
+    }
+    zone.querySelectorAll('.slot').forEach(function(s){
+      s.addEventListener('click', function(){ quizInput.active=+s.dataset.i; updateSlotHighlight(); });
+    });
+    updateSlotDisplay();
+    updateSlotHighlight();
+  }
+
+  function onKeyPress(key){
+    if(quiz.answered) return;
+    if(key==='back'){
+      const i=quizInput.active;
+      quizInput.slots[i]=quizInput.slots[i].slice(0,-1);
+      updateSlotDisplay();
+      return;
+    }
+    if(key==='check'){
+      const chk=document.getElementById('btn-check');
+      if(chk.disabled) return;
+      const q=quiz.questions[quiz.qIndex];
+      if(q.type==='num1'){
+        submitAnswer(Number(quizInput.slots[0]));
+      } else {
+        submitAnswer([Number(quizInput.slots[0]), Number(quizInput.slots[1])]);
+      }
+      return;
+    }
+    const i=quizInput.active;
+    if(quizInput.slots[i].length<5){
+      quizInput.slots[i]+=key;
+      updateSlotDisplay();
+    }
+  }
+
+  function updateHearts(){
+    const el=document.getElementById('hearts');
+    let out='';
+    for(let i=0;i<3;i++){ out += '<span class="heart">'+(i<quiz.hearts?'❤️':'🤍')+'</span>'; }
+    el.innerHTML=out;
+  }
+
+  function zoneMarkChoice(userVal, correct, answer){
+    document.querySelectorAll('.choice-btn').forEach(function(b){
+      const v=decodeURIComponent(b.dataset.val);
+      b.disabled=true;
+      if(v===answer) b.classList.add('is-correct');
+      else if(v===userVal && !correct) b.classList.add('is-wrong');
+    });
+  }
+
+  function submitAnswer(userVal){
+    if(quiz.answered) return;
+    quiz.answered=true;
+    const q=quiz.questions[quiz.qIndex];
+    let correct;
+    if(q.type==='choice') correct=(userVal===q.answer);
+    else if(q.type==='num1') correct=(userVal===q.answer);
+    else correct=(Array.isArray(q.answer) && userVal[0]===q.answer[0] && userVal[1]===q.answer[1]);
+
+    if(correct){ quiz.correct++; }
+    else { quiz.hearts=Math.max(0,quiz.hearts-1); updateHearts(); }
+
+    if(q.type==='choice'){
+      zoneMarkChoice(userVal, correct, q.answer);
+    } else {
+      document.querySelectorAll('.slot').forEach(function(s){ s.classList.add(correct?'is-correct':'is-wrong'); });
+      document.querySelectorAll('.key').forEach(function(k){ k.disabled=true; });
+    }
+
+    const fb=document.getElementById('feedback');
+    const fbText=document.getElementById('feedback-text');
+    fb.classList.remove('ok','bad');
+    fb.classList.add(correct?'ok':'bad');
+    fbText.textContent = (correct?'🎉 Chính xác! ':'❌ Chưa đúng. ') + q.explain;
+    fb.hidden=false;
+  }
+
+  function renderQuestion(){
+    quiz.answered=false;
+    const q=quiz.questions[quiz.qIndex];
+    document.getElementById('prompt').textContent=q.prompt;
+    renderDiagram(document.getElementById('diagram'), q.diagram);
+    document.getElementById('progress-label').textContent = 'Câu '+(quiz.qIndex+1)+'/'+quiz.questions.length;
+    updateHearts();
+    document.querySelectorAll('.key').forEach(function(k){ k.disabled=false; });
+    renderAnswerZone(q);
+    document.getElementById('feedback').hidden=true;
+  }
+
+  function startQuiz(){
+    const lvl=LEVELS[appState.levelIndex];
+    quiz = { questions: Array.from({length:8},function(_,i){ return lvl.gen(i); }),
+      qIndex:0, hearts:3, correct:0, answered:false };
+    document.getElementById('topbar-title').textContent = lvl.name;
+    showScreen('quiz');
+    renderQuestion();
+  }
+
+  function nextQuestion(){
+    if(quiz.hearts<=0){ endLevel(false); return; }
+    quiz.qIndex++;
+    if(quiz.qIndex>=quiz.questions.length){ endLevel(true); return; }
+    renderQuestion();
+  }
+
+  function endLevel(passed){
+    const lvl=LEVELS[appState.levelIndex];
+    progress.coins += quiz.correct;
+    if(passed){
+      const starsEarned = quiz.hearts;
+      const prevBest = progress.stars[lvl.id]||0;
+      progress.stars[lvl.id] = Math.max(prevBest, starsEarned);
+      if(lvl.id===progress.unlockedLevel && lvl.id<LEVELS.length){
+        progress.unlockedLevel = lvl.id+1;
+      }
+      saveProgress();
+      showResult(true, starsEarned, quiz.correct);
+    } else {
+      saveProgress();
+      showResult(false, 0, quiz.correct);
+    }
+  }
+
+  function showResult(passed, starsEarned, correctCount){
+    document.getElementById('result-stars').innerHTML = passed?renderStarsInline(starsEarned):'💔';
+    document.getElementById('result-title').textContent = passed?'Xuất sắc!':'Chưa qua được màn này!';
+    document.getElementById('result-sub').textContent = passed?
+      ('Bạn trả lời đúng '+correctCount+'/8 câu và nhận được +'+correctCount+' xu!') :
+      ('Bạn đã hết lượt tim, nhưng vẫn nhận +'+correctCount+' xu cho các câu đúng. '+LEVELS[appState.levelIndex].tip);
+
+    const actions=document.getElementById('result-actions');
+    actions.innerHTML='';
+    const mapBtn=document.createElement('button');
+    mapBtn.className='btn-secondary';
+    mapBtn.textContent='Về bản đồ';
+    mapBtn.addEventListener('click', goMap);
+    actions.appendChild(mapBtn);
+
+    const retryBtn=document.createElement('button');
+    retryBtn.className='btn-primary';
+    retryBtn.textContent = passed?'Chơi lại':'Thử lại';
+    retryBtn.addEventListener('click', startQuiz);
+    actions.appendChild(retryBtn);
+
+    if(passed && appState.levelIndex<LEVELS.length-1){
+      const nextBtn=document.createElement('button');
+      nextBtn.className='btn-primary';
+      nextBtn.textContent='Màn tiếp theo →';
+      nextBtn.addEventListener('click', function(){ openIntro(appState.levelIndex+1); });
+      actions.appendChild(nextBtn);
+    }
+    showScreen('result');
+  }
+
+  function init(){
+    loadLocalFallback();
+    buildKeypad();
+    renderMap();
+    showScreen('map');
+    document.getElementById('btn-back').addEventListener('click', goMap);
+    document.getElementById('btn-start').addEventListener('click', startQuiz);
+    document.getElementById('btn-next').addEventListener('click', nextQuestion);
+    initDb();
+  }
+
+  if(window.claude && window.claude.hot && window.claude.hot.snapshot){
+    window.claude.hot.snapshot(function(){
+      return { screen: appState.screen, levelIndex: appState.levelIndex };
+    });
+  }
+  function boot(saved){
+    init();
+    if(saved && (saved.screen==='intro'||saved.screen==='quiz'||saved.screen==='result') && typeof saved.levelIndex==='number'){
+      openIntro(saved.levelIndex);
+    }
+  }
+  if(window.claude && window.claude.hot && window.claude.hot.ready){
+    window.claude.hot.ready(boot);
+  } else {
+    boot((window.claude && window.claude.hot && window.claude.hot.data) || {});
+  }
+})();
+</script>
+</body>
+</html>
