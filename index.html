@@ -398,6 +398,9 @@
   .sound-btn:active{transform:translateY(4px);box-shadow:none;}
   .sound-icon{font-size:2.8rem;line-height:1;}
   .sound-hint{font-size:.68rem;font-weight:700;font-family:'Be Vietnam Pro','Segoe UI',sans-serif;}
+  .big-emoji{font-size:5rem;line-height:1;text-align:center;margin:0 auto;}
+  .emoji-count-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:280px;margin:0 auto;}
+  .count-emoji-item{font-size:2.4rem;line-height:1;}
 
   .answer-zone{width:100%;display:flex;justify-content:center;}
   .choice-grid{
@@ -1569,7 +1572,111 @@
       explain:`Đây là chữ "${answer}", đọc là "${VN_LETTER_SOUND[target]||answer}".` };
   }
 
-  const LEVELS_G4=[
+    // ---------- Lớp 1: các màn học mới (Ghép Vần, Dấu Thanh, Đếm & So Sánh, Hình Học, Từ Vựng, Đồng Hồ) ----------
+  const VAN_BANK = [{"am": "b", "van": "a", "word": "ba"}, {"am": "c", "van": "a", "word": "ca"}, {"am": "d", "van": "a", "word": "da"}, {"am": "g", "van": "a", "word": "ga"}, {"am": "l", "van": "a", "word": "la"}, {"am": "m", "van": "e", "word": "me"}, {"am": "n", "van": "ho", "word": "nho"}, {"am": "t", "van": "o", "word": "to"}, {"am": "x", "van": "a", "word": "xa"}, {"am": "x", "van": "inh", "word": "xinh"}, {"am": "x", "van": "anh", "word": "xanh"}, {"am": "ch", "van": "anh", "word": "chanh"}, {"am": "th", "van": "ơ", "word": "thơ"}, {"am": "v", "van": "ui", "word": "vui"}, {"am": "kh", "van": "i", "word": "khi"}, {"am": "kh", "van": "oe", "word": "khoe"}, {"am": "gi", "van": "a", "word": "gia"}, {"am": "h", "van": "o", "word": "ho"}, {"am": "ch", "van": "o", "word": "cho"}, {"am": "d", "van": "o", "word": "do"}, {"am": "k", "van": "ia", "word": "kia"}, {"am": "th", "van": "u", "word": "thu"}, {"am": "ch", "van": "i", "word": "chi"}, {"am": "v", "van": "o", "word": "vo"}, {"am": "n", "van": "o", "word": "no"}, {"am": "l", "van": "o", "word": "lo"}, {"am": "kh", "van": "o", "word": "kho"}, {"am": "th", "van": "i", "word": "thi"}, {"am": "s", "van": "inh", "word": "sinh"}, {"am": "m", "van": "inh", "word": "minh"}];
+  let VAN_SHUFFLED = null;
+  function genGhepVanG1(qIdx){
+    if(qIdx===0 || !VAN_SHUFFLED){ VAN_SHUFFLED = shuffle(VAN_BANK.slice()); }
+    const item = VAN_SHUFFLED[qIdx % VAN_SHUFFLED.length];
+    const otherVans = VAN_BANK.filter(function(x){ return x.van!==item.van; }).map(function(x){ return x.van; });
+    const distractVans = shuffle(otherVans.slice()).slice(0,3);
+    const distractors = distractVans.map(function(v){ return item.am+v; });
+    const opts = shuffle([item.word].concat(distractors));
+    return { type:'choice', options: opts,
+      prompt: 'Ghép "'+item.am+'" + "'+item.van+'" thành tiếng gì?',
+      answer: item.word,
+      explain: '"'+item.am+'" + "'+item.van+'" = "'+item.word+'".' };
+  }
+
+  const TONE_BANK = [{"word": "má", "tone": "sắc"}, {"word": "bé", "tone": "sắc"}, {"word": "cá", "tone": "sắc"}, {"word": "lá", "tone": "sắc"}, {"word": "gió", "tone": "sắc"}, {"word": "cháu", "tone": "sắc"}, {"word": "bà", "tone": "huyền"}, {"word": "mèo", "tone": "huyền"}, {"word": "gà", "tone": "huyền"}, {"word": "dừa", "tone": "huyền"}, {"word": "chè", "tone": "huyền"}, {"word": "mùa", "tone": "huyền"}, {"word": "nhỏ", "tone": "hỏi"}, {"word": "khỏe", "tone": "hỏi"}, {"word": "thỏ", "tone": "hỏi"}, {"word": "tủ", "tone": "hỏi"}, {"word": "chổi", "tone": "hỏi"}, {"word": "cửa", "tone": "hỏi"}, {"word": "mũ", "tone": "ngã"}, {"word": "gỗ", "tone": "ngã"}, {"word": "sữa", "tone": "ngã"}, {"word": "cũ", "tone": "ngã"}, {"word": "vẽ", "tone": "ngã"}, {"word": "bãi", "tone": "ngã"}, {"word": "mẹ", "tone": "nặng"}, {"word": "bụng", "tone": "nặng"}, {"word": "cạnh", "tone": "nặng"}, {"word": "lạnh", "tone": "nặng"}, {"word": "hạt", "tone": "nặng"}, {"word": "nhạc", "tone": "nặng"}];
+  const TONE_LABELS = {"sắc": "Dấu sắc ( ́ )", "huyền": "Dấu huyền ( ̀ )", "hỏi": "Dấu hỏi ( ̉ )", "ngã": "Dấu ngã ( ̃ )", "nặng": "Dấu nặng ( ̣ )"};
+  let TONE_SHUFFLED = null;
+  function genDauThanhG1(qIdx){
+    if(qIdx===0 || !TONE_SHUFFLED){ TONE_SHUFFLED = shuffle(TONE_BANK.slice()); }
+    const item = TONE_SHUFFLED[qIdx % TONE_SHUFFLED.length];
+    const allTones = Object.keys(TONE_LABELS);
+    const wrongTones = shuffle(allTones.filter(function(t){ return t!==item.tone; })).slice(0,3);
+    const opts = shuffle([item.tone].concat(wrongTones)).map(function(t){ return TONE_LABELS[t]; });
+    const answer = TONE_LABELS[item.tone];
+    return { type:'choice', options: opts,
+      prompt: 'Từ "'+item.word+'" mang dấu thanh gì?',
+      answer: answer,
+      explain: 'Từ "'+item.word+'" mang '+answer.toLowerCase()+'.' };
+  }
+
+  const WORD_PIC_BANK = [{"emoji": "🐱", "word": "con mèo"}, {"emoji": "🐶", "word": "con chó"}, {"emoji": "🐮", "word": "con bò"}, {"emoji": "🐷", "word": "con lợn"}, {"emoji": "🐔", "word": "con gà"}, {"emoji": "🐟", "word": "con cá"}, {"emoji": "🍎", "word": "quả táo"}, {"emoji": "🍌", "word": "quả chuối"}, {"emoji": "🍇", "word": "quả nho"}, {"emoji": "🍉", "word": "quả dưa hấu"}, {"emoji": "🌞", "word": "ông mặt trời"}, {"emoji": "🌙", "word": "mặt trăng"}, {"emoji": "⭐", "word": "ngôi sao"}, {"emoji": "🌳", "word": "cây"}, {"emoji": "🌸", "word": "bông hoa"}, {"emoji": "🚗", "word": "ô tô"}, {"emoji": "🚲", "word": "xe đạp"}, {"emoji": "✈️", "word": "máy bay"}, {"emoji": "🏠", "word": "ngôi nhà"}, {"emoji": "☂️", "word": "cái ô"}, {"emoji": "👒", "word": "cái mũ"}, {"emoji": "📚", "word": "quyển sách"}, {"emoji": "✏️", "word": "cây bút chì"}, {"emoji": "🎈", "word": "quả bóng bay"}];
+  let WORDPIC_SHUFFLED = null;
+  function genNoiTuHinhG1(qIdx){
+    if(qIdx===0 || !WORDPIC_SHUFFLED){ WORDPIC_SHUFFLED = shuffle(WORD_PIC_BANK.slice()); }
+    const item = WORDPIC_SHUFFLED[qIdx % WORDPIC_SHUFFLED.length];
+    const others = WORD_PIC_BANK.filter(function(x){ return x.word!==item.word; });
+    const distractors = shuffle(others.slice()).slice(0,3).map(function(x){ return x.word; });
+    const opts = shuffle([item.word].concat(distractors));
+    return { type:'choice', options: opts, prompt:'Đây là gì?',
+      diagram: { kind:'emoji', emoji: item.emoji },
+      answer: item.word,
+      explain: 'Đây là '+item.word+' '+item.emoji+'.' };
+  }
+
+  const COUNT_EMOJI = ["🍎", "⭐", "🐟", "🎈", "🌸", "🍌", "🐱", "🚗"];
+  const COUNT_NAME = {"🍎": "quả táo", "⭐": "ngôi sao", "🐟": "con cá", "🎈": "quả bóng bay", "🌸": "bông hoa", "🍌": "quả chuối", "🐱": "con mèo", "🚗": "ô tô"};
+  function genDemSoSanhG1(qIdx){
+    const isCount = Math.random()<0.6;
+    if(isCount){
+      const n = randInt(2,10);
+      const em = choice(COUNT_EMOJI);
+      const name = COUNT_NAME[em];
+      const wrongs = [];
+      while(wrongs.length<3){
+        const d = n + choice([-2,-1,1,2,3]);
+        if(d>=1 && d<=12 && d!==n && wrongs.indexOf(d)===-1) wrongs.push(d);
+      }
+      const opts = shuffle([n].concat(wrongs).map(String));
+      return { type:'choice', options: opts,
+        prompt: 'Có bao nhiêu '+name+'?',
+        diagram: { kind:'emoji-count', emoji: em, count: n },
+        answer: String(n),
+        explain: 'Có tất cả '+n+' '+name+'.' };
+    } else {
+      const a = randInt(1,20);
+      let b = randInt(1,20);
+      while(b===a){ b = randInt(1,20); }
+      const bigger = Math.max(a,b);
+      const smaller = Math.min(a,b);
+      const opts = shuffle([String(a), String(b)]);
+      return { type:'choice', options: opts,
+        prompt: 'Số nào lớn hơn: '+a+' hay '+b+'?',
+        answer: String(bigger),
+        explain: 'Vì '+bigger+' lớn hơn '+smaller+' nên đáp án là '+bigger+'.' };
+    }
+  }
+
+  const SHAPE_NAMES = { square:'Hình vuông', circle:'Hình tròn', triangle:'Hình tam giác', rect:'Hình chữ nhật' };
+  function genHinhHocG1(qIdx){
+    const shapes = Object.keys(SHAPE_NAMES);
+    const target = choice(shapes);
+    const opts = shuffle(Object.keys(SHAPE_NAMES).map(function(k){ return SHAPE_NAMES[k]; }));
+    return { type:'choice', options: opts, prompt:'Đây là hình gì?',
+      diagram: { kind:'shape', shape: target },
+      answer: SHAPE_NAMES[target],
+      explain: 'Đây là '+SHAPE_NAMES[target].toLowerCase()+'.' };
+  }
+
+  function genDongHoG1(qIdx){
+    const hour = randInt(1,12);
+    const wrongs = [];
+    while(wrongs.length<3){
+      const h = randInt(1,12);
+      if(h!==hour && wrongs.indexOf(h)===-1) wrongs.push(h);
+    }
+    const opts = shuffle([hour].concat(wrongs).map(function(h){ return h+' giờ'; }));
+    return { type:'choice', options: opts, prompt:'Đồng hồ đang chỉ mấy giờ?',
+      diagram: { kind:'clock', hour: hour },
+      answer: hour+' giờ',
+      explain: 'Kim ngắn chỉ đúng vào số '+hour+', kim dài chỉ số 12 nên là '+hour+' giờ đúng.' };
+  }
+
+const LEVELS_G4=[
     { id:1, name:'Làng Cộng Trừ', icon:'➕',
       tip:'Mẹo: Đặt các chữ số thẳng cột rồi tính từ phải sang trái. Nhớ khi cộng, mượn khi trừ!',
       gen:genAddSub },
@@ -1601,8 +1708,26 @@
     { id:2, name:'Rừng Chữ Cái', icon:'🔤', qCount:50,
       tip:'Mẹo: Nhìn kỹ hình dạng của chữ — chữ có nét cong, chữ có nét thẳng, đừng nhầm chữ giống nhau nhé!',
       gen:genLetterG1 },
+    { id:3, name:'Xóm Ghép Vần', icon:'🔡', qCount:30,
+      tip:'Mẹo: Đọc thầm âm đầu rồi đọc tiếp vần, ghép liền lại thành một tiếng nhé!',
+      gen:genGhepVanG1 },
+    { id:4, name:'Núi Dấu Thanh', icon:'🎵', qCount:30,
+      tip:'Mẹo: Sắc đi lên (´), huyền đi xuống (`), hỏi cong cong (̉), ngã gãy khúc (̃), nặng có chấm (̣) nhé!',
+      gen:genDauThanhG1 },
+    { id:5, name:'Đếm & So Sánh Số', icon:'🔢', qCount:30,
+      tip:'Mẹo: Đếm thật kỹ từng đồ vật một, đừng đếm sót hay đếm trùng nhé!',
+      gen:genDemSoSanhG1 },
+    { id:6, name:'Hình Học Nhí', icon:'🔷', qCount:24,
+      tip:'Mẹo: Hình vuông có 4 cạnh bằng nhau, hình chữ nhật có 2 cạnh dài 2 cạnh ngắn, hình tròn không có cạnh, hình tam giác có 3 cạnh nhé!',
+      gen:genHinhHocG1 },
+    { id:7, name:'Vườn Từ Vựng', icon:'🖼️', qCount:24,
+      tip:'Mẹo: Nhìn thật kỹ hình vẽ rồi nghĩ xem đó là con gì, quả gì hay đồ vật gì nhé!',
+      gen:genNoiTuHinhG1 },
+    { id:8, name:'Tháp Đồng Hồ', icon:'🕐', qCount:24,
+      tip:'Mẹo: Kim ngắn chỉ giờ, kim dài chỉ phút. Khi kim dài chỉ đúng số 12 nghĩa là giờ đúng nhé!',
+      gen:genDongHoG1 },
   ];
-  const MAP_POINTS_G1=[{x:28,y:100},{x:68,y:30}];
+  const MAP_POINTS_G1=[{x:24,y:120},{x:74,y:106},{x:22,y:92},{x:74,y:78},{x:22,y:62},{x:74,y:46},{x:22,y:30},{x:50,y:12}];
 
   function catmullRom2bezier(points){
     let d = `M${points[0].x},${points[0].y} `;
@@ -1655,6 +1780,37 @@
         <circle cx="${vx}" cy="${vy}" r="3" class="dg-dot"/>
         <text x="${(vx+70).toFixed(0)}" y="${(vy-40).toFixed(0)}" class="dg-label">${d.theta}°</text>
       </svg>`;
+    } else if(d.kind==='emoji'){
+      el.innerHTML = '<div class="big-emoji">'+d.emoji+'</div>';
+    } else if(d.kind==='emoji-count'){
+      let items='';
+      for(let i=0;i<d.count;i++){ items += '<span class="count-emoji-item">'+d.emoji+'</span>'; }
+      el.innerHTML = '<div class="emoji-count-grid">'+items+'</div>';
+    } else if(d.kind==='shape'){
+      let inner='';
+      if(d.shape==='square'){ inner='<rect x="70" y="25" width="80" height="80" class="dg-shape"/>'; }
+      else if(d.shape==='circle'){ inner='<circle cx="110" cy="65" r="45" class="dg-shape"/>'; }
+      else if(d.shape==='triangle'){ inner='<polygon points="110,20 55,105 165,105" class="dg-shape"/>'; }
+      else if(d.shape==='rect'){ inner='<rect x="45" y="35" width="130" height="60" class="dg-shape"/>'; }
+      el.innerHTML = '<svg viewBox="0 0 220 130" class="diagram-svg">'+inner+'</svg>';
+    } else if(d.kind==='clock'){
+      const cx=70, cy=70;
+      let ticks='';
+      for(let i=0;i<12;i++){
+        const ang = i*30*Math.PI/180;
+        const tx1=cx+50*Math.sin(ang), ty1=cy-50*Math.cos(ang);
+        const tx2=cx+58*Math.sin(ang), ty2=cy-58*Math.cos(ang);
+        ticks += '<line x1="'+tx1.toFixed(1)+'" y1="'+ty1.toFixed(1)+'" x2="'+tx2.toFixed(1)+'" y2="'+ty2.toFixed(1)+'" class="dg-mark"/>';
+      }
+      const hourAng = (d.hour%12)*30*Math.PI/180;
+      const hx = cx + 32*Math.sin(hourAng), hy = cy - 32*Math.cos(hourAng);
+      el.innerHTML = '<svg viewBox="0 0 140 140" class="diagram-svg">'+
+        '<circle cx="'+cx+'" cy="'+cy+'" r="60" class="dg-shape"/>'+
+        ticks+
+        '<line x1="'+cx+'" y1="'+cy+'" x2="'+cx+'" y2="'+(cy-46)+'" class="dg-shape" stroke-width="3"/>'+
+        '<line x1="'+cx+'" y1="'+cy+'" x2="'+hx.toFixed(1)+'" y2="'+hy.toFixed(1)+'" class="dg-shape" stroke-width="5"/>'+
+        '<circle cx="'+cx+'" cy="'+cy+'" r="4" fill="var(--ink)"/>'+
+      '</svg>';
     }
   }
 
